@@ -1,112 +1,133 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-import ConceptCard from '../components/ConceptCard';
-import AnimatedPacketDemo from '../components/AnimatedPacketDemo';
+import ModuleCard from '../components/ModuleCard';
+import { learningModules } from '../data/learningModules';
+import { useAppContext } from '../context/AppContext';
 
 const Learn = () => {
+  const { user } = useAppContext();
+  const completedModules = user?.completedModules || [];
+
   return (
-    <Layout title="How Routers Work">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        {/* Left Column: Instructional Content */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
-          <div className="bg-surface-container-low rounded-lg p-8 h-full flex flex-col">
-            <div className="mb-8">
-              <span className="bg-primary-container text-on-primary-container px-4 py-1.5 rounded-full text-xs font-bold font-label uppercase tracking-widest mb-4 inline-block">Module 04</span>
-              <h2 className="text-4xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">The Digital Traffic Cop</h2>
-              <p className="mt-4 text-on-surface-variant leading-relaxed font-body">Routers don't just connect cables; they make intelligent decisions about where your data needs to go next.</p>
-            </div>
-            
-            <div className="space-y-6 flex-1">
-              <ConceptCard 
-                title="IP Addressing" 
-                description="Every packet has a destination IP. The router reads this 'address label' to sort incoming traffic." 
-                icon="location_on" 
-                colorClass="bg-primary/10 text-primary" 
-              />
-              <ConceptCard 
-                title="Routing Tables" 
-                description="A map of the network stored in memory. It tells the router the fastest path to any destination." 
-                icon="alt_route" 
-                colorClass="bg-secondary-container text-secondary" 
-              />
-              <ConceptCard 
-                title="Next Hop" 
-                description="If the destination isn't local, the router passes the packet to the next 'hop' in the chain." 
-                icon="forward" 
-                colorClass="bg-tertiary-container/20 text-tertiary" 
-              />
-            </div>
+    <Layout title="Learning Roadmap">
+      <div className="max-w-4xl mx-auto pb-20 relative">
+        {/* Header Section */}
+        <div className="text-center mb-16 space-y-4">
+          <h2 className="text-4xl font-black font-headline text-on-surface tracking-tight">Path to Mastery</h2>
+          <p className="text-on-surface-variant max-w-lg mx-auto font-medium">Follow the curated roadmap to become a certified Network Architect.</p>
+        </div>
 
-            <div className="mt-8">
-              <button className="w-full py-5 rounded-xl bg-gradient-to-br from-primary to-primary-container text-white font-headline font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
-                <span className="material-symbols-outlined">play_circle</span>
-                Try Simulation
-              </button>
-            </div>
+        {/* The Roadmap Path */}
+        <div className="relative">
+          {/* Vertical Connecting Line */}
+          <div className="absolute left-8 top-0 bottom-0 w-1 bg-surface-container rounded-full hidden md:block"></div>
+          
+          <div className="space-y-12">
+            {learningModules.map((module, index) => {
+              const isCompleted = completedModules.includes(module.id);
+              const isLocked = index > 0 && !completedModules.includes(learningModules[index - 1].id);
+              
+              return (
+                <div key={module.id} className={`relative flex flex-col md:flex-row gap-8 items-start group ${isLocked ? 'pointer-events-none opacity-60 grayscale-[0.5]' : ''}`}>
+                  {/* Node Indicator */}
+                  <div className={`hidden md:flex absolute left-8 -translate-x-1/2 w-10 h-10 rounded-full bg-white border-4 items-center justify-center z-10 transition-colors ${
+                    isCompleted ? 'border-primary bg-primary' : (isLocked ? 'border-surface-container' : 'border-surface-container group-hover:border-primary')
+                  }`}>
+                    {isCompleted ? (
+                      <span className="material-symbols-outlined text-white text-sm">check</span>
+                    ) : (
+                      <div className={`w-3 h-3 rounded-full ${isLocked ? 'bg-surface-container' : 'bg-surface-container group-hover:bg-primary'}`}></div>
+                    )}
+                  </div>
+
+                  {/* Module Number (Large) */}
+                  <div className="text-6xl font-black text-surface-container-highest opacity-10 font-headline absolute -left-4 -top-6 pointer-events-none group-hover:opacity-20 transition-opacity">
+                    {module.moduleNumber}
+                  </div>
+
+                  {/* Module Card Content */}
+                  <div className={`md:ml-20 flex-1 w-full rounded-2xl p-8 border border-white/20 shadow-lg transition-all duration-300 ${
+                    isLocked ? 'bg-surface-container text-on-surface/50' : 'bg-surface-container-low hover:shadow-2xl hover:-translate-y-1'
+                  }`}>
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                            isCompleted ? 'bg-primary/20 text-primary' : (isLocked ? 'bg-slate-200 text-slate-400' : 'bg-primary/10 text-primary')
+                          }`}>
+                            <span className="material-symbols-outlined">{isLocked ? 'lock' : module.icon}</span>
+                          </div>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant bg-surface-container rounded-full px-3 py-1">
+                            {isLocked ? 'Locked' : `Module ${module.moduleNumber}`}
+                          </span>
+                        </div>
+                        <h3 className="text-2xl font-black font-headline text-on-surface">{module.title}</h3>
+                        <p className="text-on-surface-variant leading-relaxed text-sm max-w-xl">
+                          {isLocked ? 'Complete the previous module to unlock this lesson.' : module.shortDescription}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-center gap-4 lg:text-right">
+                        {!isLocked && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-[10px] font-bold text-on-surface-variant uppercase justify-center lg:justify-end">
+                               <span className="material-symbols-outlined text-[10px]">timer</span>
+                               {module.time}
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase justify-center lg:justify-end">
+                               <span className="material-symbols-outlined text-[10px]">bolt</span>
+                               {module.xp} XP
+                            </div>
+                          </div>
+                        )}
+                        
+                        {isLocked ? (
+                          <div className="bg-slate-200 text-slate-500 px-8 py-3 rounded-xl font-bold text-sm cursor-not-allowed flex items-center gap-2">
+                             <span className="material-symbols-outlined text-sm">lock</span>
+                             Locked
+                          </div>
+                        ) : (
+                          <Link 
+                            to={`/learn/${module.id}`}
+                            className={`${
+                              isCompleted ? 'bg-surface-container text-on-surface border border-surface-container-highest' : 'bg-primary text-on-primary shadow-xl shadow-primary/20'
+                            } px-8 py-3 rounded-xl font-bold text-sm hover:scale-105 active:scale-95 transition-all whitespace-nowrap`}
+                          >
+                            {isCompleted ? 'Review Lesson' : (index === 0 ? 'Start Learning' : 'Begin Module')}
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Vertical Line for next step (between cards on mobile) */}
+                  {index < learningModules.length - 1 && (
+                    <div className="md:hidden self-center py-4 text-surface-container">
+                      <span className="material-symbols-outlined">expand_more</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Right Column: Interactive Diagram */}
-        <div className="lg:col-span-7">
-          <div className="bg-surface-container-high rounded-lg p-8 h-full relative overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center mb-12">
-              <h3 className="font-headline font-bold text-xl text-on-surface">Live Packet Flow</h3>
-              <div className="flex gap-2">
-                <div className="w-3 h-3 rounded-full bg-secondary"></div>
-                <div className="w-3 h-3 rounded-full bg-secondary/30"></div>
-                <div className="w-3 h-3 rounded-full bg-secondary/10"></div>
-              </div>
-            </div>
-
-            <AnimatedPacketDemo />
-
-            {/* Action/Info Bar */}
-            <div className="mt-12 bg-surface-container-lowest/50 backdrop-blur rounded-xl p-4 flex items-center justify-between border-2 border-white/20">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-tertiary-container flex items-center justify-center">
-                  <span className="material-symbols-outlined text-on-tertiary-container">info</span>
-                </div>
-                <div>
-                  <p className="text-xs font-bold font-label uppercase text-on-surface-variant">Packet Status</p>
-                  <p className="text-sm font-bold text-on-surface">Encapsulating Payload...</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Latency</p>
-                  <p className="text-sm font-bold text-secondary">12ms</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Loss</p>
-                  <p className="text-sm font-bold text-secondary">0%</p>
-                </div>
-              </div>
-            </div>
+        {/* Footer info */}
+        <div className="mt-20 flex flex-col md:flex-row items-center justify-center gap-12 bg-surface-container-low rounded-3xl p-10 border border-white/20">
+          <div className="text-center">
+             <p className="text-3xl font-black font-headline text-on-surface">{completedModules.length} / {learningModules.length}</p>
+             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Modules Completed</p>
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Quick Nav/Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-        <div className="bg-white p-6 rounded-lg shadow-sm flex flex-col justify-center items-center text-center">
-          <p className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest">Time to Master</p>
-          <p className="text-2xl font-headline font-black mt-1 text-on-surface">15 min</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm flex flex-col justify-center items-center text-center">
-          <p className="text-xs font-label font-bold text-slate-400 uppercase tracking-widest">XP Reward</p>
-          <p className="text-2xl font-headline font-black text-primary mt-1">+450 XP</p>
-        </div>
-        <div className="md:col-span-2 bg-secondary-container p-6 rounded-lg flex items-center justify-between px-10">
-          <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>military_tech</span>
-            </div>
-            <div>
-              <p className="text-on-secondary-container font-headline font-bold text-lg">Knowledge Streak</p>
-              <p className="text-on-secondary-container/70 text-sm">3 modules completed today!</p>
-            </div>
+          <div className="h-px md:h-12 w-24 md:w-px bg-surface-container"></div>
+          <div className="text-center">
+             <p className="text-3xl font-black font-headline text-primary">3,250</p>
+             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Total Knowledge XP</p>
           </div>
-          <span className="material-symbols-outlined text-secondary text-4xl">chevron_right</span>
+          <div className="h-px md:h-12 w-24 md:w-px bg-surface-container"></div>
+          <Link to="/challenges" className="flex items-center gap-3 bg-secondary text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-secondary/20 hover:scale-105 active:scale-95 transition-all">
+            <span className="material-symbols-outlined">auto_fix_high</span>
+            Test Your Knowledge
+          </Link>
         </div>
       </div>
     </Layout>

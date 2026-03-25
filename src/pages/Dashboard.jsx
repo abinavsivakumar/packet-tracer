@@ -1,22 +1,31 @@
 import React from 'react';
-import Layout from '../components/Layout';
+import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import XPBar from '../components/XPBar';
+import Layout from '../components/Layout';
+import { learningModules } from '../data/learningModules';
 import StatCard from '../components/StatCard';
 import BadgeCard from '../components/BadgeCard';
+import XPBar from '../components/XPBar';
 
 const Dashboard = () => {
   const { user } = useAppContext();
+  
+  if (!user) return <Layout title="Dashboard">Please sign in to view your dashboard.</Layout>;
+
+  const completedModules = user?.completedModules || [];
+  
+  // Find the first module that is NOT completed
+  const currentModule = learningModules.find(m => !completedModules.includes(m.id)) || learningModules[0];
 
   return (
     <Layout title="Overview / Dashboard">
       {/* Welcome Header & Progress Section */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-8 text-on-surface">
         <div className="space-y-2">
-          <h2 className="text-4xl font-black font-headline tracking-tight">Welcome back, {user.name.split(' ')[0]}!</h2>
+          <h2 className="text-4xl font-black font-headline tracking-tight">Welcome back, {user.name?.split(' ')[0] || 'Explorer'}!</h2>
           <p className="text-on-surface-variant font-medium">You're on a 5-day streak. Keep it up!</p>
         </div>
-        <XPBar currentXP={user.xp} xpToNext={user.xpToNext} level={user.level} />
+        <XPBar currentXP={user.xp || 0} xpToNext={user.xpToNext || 1000} level={user.level || 1} />
       </section>
 
       {/* Grid Layout */}
@@ -27,12 +36,15 @@ const Dashboard = () => {
             <div className="relative z-10 space-y-6 max-w-md">
               <span className="bg-primary-container/30 px-4 py-1 rounded-full text-xs font-bold font-headline uppercase tracking-widest border border-white/10">Active Mission</span>
               <div className="space-y-2">
-                <h3 className="text-3xl font-black font-headline leading-tight">Introduction to Routers</h3>
-                <p className="text-on-primary/80 leading-relaxed">Master the art of traffic management. Learn how packets hop across networks to reach their destination.</p>
+                <h3 className="text-3xl font-black font-headline leading-tight">{currentModule.title}</h3>
+                <p className="text-on-primary/80 leading-relaxed">{currentModule.shortDescription}</p>
               </div>
-              <button className="bg-white text-primary px-8 py-4 rounded-xl font-headline font-bold text-sm shadow-xl shadow-black/10 hover:scale-105 active:scale-95 transition-all">
+              <Link 
+                to={`/learn/${currentModule.id}`}
+                className="bg-white text-primary px-8 py-4 rounded-xl font-headline font-bold text-sm shadow-xl shadow-black/10 hover:scale-105 active:scale-95 transition-all inline-block"
+              >
                 Continue Learning
-              </button>
+              </Link>
             </div>
             {/* Abstract Background Decoration */}
             <div className="absolute top-0 right-0 w-1/2 h-full opacity-20 pointer-events-none">
@@ -50,7 +62,7 @@ const Dashboard = () => {
         <div className="col-span-12 lg:col-span-4 grid grid-cols-1 gap-6">
           <StatCard 
             label="Current Level" 
-            value={user.rank} 
+            value={`Level ${user.level}`} 
             icon="layers" 
             colorClass="bg-secondary-container text-on-secondary-container" 
           />
@@ -105,7 +117,6 @@ const Dashboard = () => {
               </div>
               <span className="text-secondary font-bold text-xs">+150 XP</span>
             </div>
-            {/* Additional activity items can be added here */}
           </div>
         </div>
 

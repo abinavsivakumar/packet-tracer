@@ -1,9 +1,9 @@
 import React from 'react';
 
-const ChallengeCard = ({ challenge, isCompleted, isCurrent, onStart }) => {
-  const { level, title, description, difficulty, xpReward, rewardText, icon, colorClass, locked } = challenge;
+const ChallengeCard = ({ challenge, isCompleted, isCurrent, isLocked, onStart }) => {
+  const { level, title, description, difficulty, xpReward, rewardText, icon, colorClass } = challenge;
 
-  if (locked) {
+  if (isLocked) {
     return (
       <div className="group relative bg-surface-container-low p-6 rounded-lg opacity-80 grayscale overflow-hidden shadow-sm">
         <div className="absolute inset-0 bg-surface-container-highest/20 backdrop-blur-[2px] z-10 flex items-center justify-center">

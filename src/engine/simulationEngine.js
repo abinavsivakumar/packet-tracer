@@ -13,19 +13,21 @@ export const runSimulation = (nodes, edges, sourceId, targetId) => {
     logs: []
   };
 
+  let step = 1;
+
   while (queue.length > 0) {
     const { nodeId, path, latency } = queue.shift();
     const currentNode = nodes.find(n => n.id === nodeId);
+
+    logs.push(`Step ${step++}: Exploring node [${currentNode.label}] at ${currentNode.ip || 'no-ip'} (Current path: ${path.join(' → ')})`);
 
     if (nodeId === targetId) {
       result.success = true;
       result.path = path;
       result.totalLatency = latency;
-      result.logs = [...logs, `Reached destination: ${currentNode.label}`];
+      result.logs = [...logs, `🏁 SUCCESS: Destination [${currentNode.label}] reached at ${currentNode.ip || 'no-ip'} in ${latency}ms`];
       return result;
     }
-
-    logs.push(`At node: ${currentNode.label}`);
 
     const neighbors = edges.filter(e => e.from === nodeId || e.to === nodeId);
 
@@ -34,17 +36,33 @@ export const runSimulation = (nodes, edges, sourceId, targetId) => {
       const neighborNode = nodes.find(n => n.id === neighborId);
 
       if (!visited.has(neighborId)) {
+        // Subnet Validation: Devices on different subnets need a router
+        const isSameSubnet = (ip1, ip2) => {
+            if (!ip1 || !ip2) return true; // Default to allow if IP not set yet
+            const p1 = ip1.split('.').slice(0, 3).join('.');
+            const p2 = ip2.split('.').slice(0, 3).join('.');
+            return p1 === p2;
+        };
+
+        const needsRouter = currentNode.type !== 'router' && neighborNode.type !== 'router';
+        
+        if (needsRouter && !isSameSubnet(currentNode.ip, neighborNode.ip)) {
+            logs.push(`🚫 BLOCKED: [${currentNode.label}] and [${neighborNode.label}] are on different subnets! (${currentNode.ip} vs ${neighborNode.ip}). Connection requires a Router.`);
+            continue;
+        }
+
         if (neighborNode.failed) {
-          logs.push(`Failed to reach ${neighborNode.label}: Node is down`);
+          logs.push(`⚠️ DISRUPTION: Cannot pass through [${neighborNode.label}]. Node is down!`);
           continue;
         }
 
-        // Apply constraints
-        const newLatency = latency + edge.latency;
-        // Simple bandwidth constraint simulation
-        if (edge.bandwidth < 10) {
-            result.packetLoss += 20;
-            result.efficiency -= 10;
+        const newLatency = latency + (edge.latency || 10);
+        
+        // Bandwidth simulation impact
+        if ((edge.bandwidth || 100) < 20) {
+            result.packetLoss += 25;
+            result.efficiency -= 15;
+            logs.push(`🐢 CONGESTION: Low bandwidth detected between ${currentNode.label} and ${neighborNode.label}.`);
         }
 
         visited.add(neighborId);
@@ -53,11 +71,12 @@ export const runSimulation = (nodes, edges, sourceId, targetId) => {
           path: [...path, neighborId],
           latency: newLatency
         });
+        logs.push(`➕ QUEUED: Next hop [${neighborNode.label}] (${neighborNode.ip || 'no-ip'}) (+${edge.latency || 10}ms)`);
       }
     }
   }
 
   result.logs = logs;
-  result.logs.push("Target unreachable");
+  result.logs.push("❌ FAILURE: Packet dropped. No valid path to destination found.");
   return result;
 };

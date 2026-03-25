@@ -10,4 +10,4 @@ const PlaceholderPage = ({ title }) => (
   </Layout>
 );
 
-export const Profile = () => <PlaceholderPage title="User Profile" />;
+

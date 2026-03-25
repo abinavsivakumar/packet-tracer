@@ -30,7 +30,7 @@ export const challenges = [
         { id: 'l1', type: 'laptop', label: 'Laptop_1', x: 200, y: 200, ip: '192.168.1.2' },
         { id: 'l2', type: 'laptop', label: 'Laptop_2', x: 200, y: 400, ip: '192.168.1.3' },
         { id: 'r1', type: 'router', label: 'Core_Router', x: 600, y: 300, ip: '192.168.1.1' },
-        { id: 's1', type: 'server', label: 'Web_Server', x: 800, y: 300, ip: '8.8.8.8' }
+        { id: 's1', type: 'server', label: 'Web_Server', x: 800, y: 300, ip: '192.168.1.10' }
     ],
     initialEdges: [],
     targetNodeId: 's1'
@@ -45,6 +45,14 @@ export const challenges = [
     rewardText: 'Expert Badge',
     icon: 'dns',
     colorClass: 'bg-surface-container-highest text-outline',
-    locked: true
+    initialNodes: [
+        { id: 'client', type: 'laptop', label: 'Desktop_1', x: 200, y: 300, ip: '10.0.0.5' },
+        { id: 'r_edge', type: 'router', label: 'Edge_Router', x: 500, y: 300, ip: '10.0.0.1' },
+        { id: 'dns_srv', type: 'server', label: 'DNS_Server', x: 800, y: 300, ip: '8.8.8.8' }
+    ],
+    initialEdges: [
+        { id: 'e1', from: 'client', to: 'r_edge', bandwidth: 100 }
+    ],
+    targetNodeId: 'dns_srv'
   }
 ];

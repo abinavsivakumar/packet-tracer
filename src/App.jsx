@@ -7,16 +7,40 @@ import Learn from './pages/Learn';
 import Builder from './pages/Builder';
 import SimulationOutput from './pages/SimulationOutput';
 import Challenges from './pages/Challenges';
-import { Profile } from './pages/Placeholders';
+import Profile from './pages/Profile';
+import ModuleDetail from './pages/ModuleDetail';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 function AppContent() {
-  const { toast, setToast } = useAppContext();
+  const { user, toast, setToast } = useAppContext();
+  const [authMode, setAuthMode] = React.useState('login'); // 'login' or 'signup'
+
+  if (!user) {
+    return (
+      <>
+        {toast && (
+          <Toast 
+            message={toast.message} 
+            type={toast.type} 
+            onClose={() => setToast(null)} 
+          />
+        )}
+        {authMode === 'login' ? (
+          <Login onToggle={() => setAuthMode('signup')} />
+        ) : (
+          <Signup onToggle={() => setAuthMode('login')} />
+        )}
+      </>
+    );
+  }
 
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/learn" element={<Learn />} />
+        <Route path="/learn/:moduleId" element={<ModuleDetail />} />
         <Route path="/builder" element={<Builder />} />
         <Route path="/challenges" element={<Challenges />} />
         <Route path="/output" element={<SimulationOutput />} />

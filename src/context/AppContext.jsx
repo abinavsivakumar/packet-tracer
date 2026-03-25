@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { loadState, saveState } from '../utils/storage';
+import { challenges } from '../utils/challenges';
 
 const AppContext = createContext();
 
@@ -18,8 +19,10 @@ const initialUserState = {
   xpToNext: 2000,
   unlockedDevices: 18,
   completedChallenges: 42,
+  completedChallengeIds: ['ch_1'], // Starting with first one done
   badges: ["rocket_launch", "shield", "hub"],
-  rank: "Architect"
+  rank: "Architect",
+  completedModules: ["intro-networking", "ip-addressing", "routing-basics", "subnetting"] 
 };
 
 const initialSimulationState = {
@@ -32,7 +35,10 @@ const initialSimulationState = {
 export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const saved = loadState();
-    return saved?.user || initialUserState;
+    if (saved && saved.user === null) return null;
+    if (!saved?.user) return initialUserState;
+    // Merge saved user with initialUserState to ensure new fields are present
+    return { ...initialUserState, ...saved.user };
   });
 
   const [simulation, setSimulationState] = useState(() => {
@@ -58,15 +64,23 @@ export const AppProvider = ({ children }) => {
 
   const addXP = (amount) => {
     setUser(prev => {
+      if (!prev) return null;
       let newXP = prev.xp + amount;
       let newLevel = prev.level;
       let newXPToNext = prev.xpToNext;
 
       if (newXP >= newXPToNext) {
-        newXP -= newXPToNext;
         newLevel += 1;
-        newXPToNext = Math.floor(newXPToNext * 1.2);
-        showToast(`LEVEL UP! You are now Level ${newLevel}`, 'success');
+        newXP -= newXPToNext;
+        newXPToNext = Math.floor(newXPToNext * 1.5);
+        
+        // Notify of level up
+        showToast(`🎉 Level Up! You are now Level ${newLevel}`, 'success');
+
+        // Check for device unlocks
+        if (newLevel === 3) showToast('🔓 UNLOCKED: Routers are now available in the Builder!', 'info');
+        if (newLevel === 5) showToast('🔓 UNLOCKED: Servers are now available in the Builder!', 'info');
+        if (newLevel === 8) showToast('🔓 UNLOCKED: Advanced security tools are now available!', 'info');
       } else {
         showToast(`+${amount} XP Earned`, 'info');
       }
@@ -80,15 +94,48 @@ export const AppProvider = ({ children }) => {
     });
   };
 
+  const login = () => {
+    setUser(initialUserState);
+    showToast('Welcome back, Sam Miller!', 'success');
+  };
+
+  const logout = () => {
+    setUser(null);
+    showToast('Signed out successfully', 'info');
+  };
+
   const completeChallenge = (challengeId) => {
-    if (activeChallenge && activeChallenge.id === challengeId) {
-      addXP(activeChallenge.xpReward);
-      setUser(prev => ({
+    const challenge = challenges.find(ch => ch.id === challengeId);
+    if (!challenge) return;
+
+    setUser(prev => {
+        if (!prev) return null;
+        const safeIds = prev.completedChallengeIds || [];
+        if (safeIds.includes(challengeId)) return prev;
+        return {
+            ...prev,
+            completedChallengeIds: [...safeIds, challengeId],
+            completedChallenges: (prev.completedChallenges || 0) + 1
+        };
+    });
+    addXP(challenge.xpReward || 100);
+    showToast(`Challenge Completed! +${challenge.xpReward || 100} XP`, 'success');
+    setActiveChallenge(null); // Clear active challenge on success
+  };
+
+  const completeModule = (moduleId) => {
+    setUser(prev => {
+      if (!prev) return null;
+      const safeCompletedModules = prev.completedModules || [];
+      if (safeCompletedModules.includes(moduleId)) return prev;
+      return {
         ...prev,
-        completedChallenges: prev.completedChallenges + 1
-      }));
-      setActiveChallenge(null);
-    }
+        completedModules: [...safeCompletedModules, moduleId],
+        completedChallenges: (prev.completedChallenges || 0) + 1
+      };
+    });
+    addXP(500); // Reward for completion
+    showToast('Module Completed! Level up your skills.', 'success');
   };
 
   const setSimulation = (nodes, edges) => {
@@ -106,16 +153,20 @@ export const AppProvider = ({ children }) => {
   const value = {
     user,
     setUser,
+    login,
+    logout,
     simulation,
     setSimulationState,
     activeChallenge,
     setActiveChallenge,
     addXP,
     completeChallenge,
+    completeModule,
     setSimulation,
     runSimulation,
     toast,
-    setToast
+    setToast,
+    showToast
   };
 
   return (

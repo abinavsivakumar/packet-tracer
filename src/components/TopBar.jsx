@@ -5,7 +5,7 @@ const TopBar = ({ title }) => {
   const { user } = useAppContext();
 
   return (
-    <header className="fixed top-0 right-0 left-64 h-16 z-40 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 w-full shadow-sm border-b border-surface-container">
+    <header className="fixed top-0 right-0 left-64 h-16 z-40 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 shadow-sm border-b border-surface-container">
       <div className="flex items-center gap-4">
         <span className="font-headline text-sm font-bold text-slate-600">{title}</span>
       </div>
@@ -26,7 +26,7 @@ const TopBar = ({ title }) => {
             <span className="material-symbols-outlined text-blue-600" data-icon="military_tech">military_tech</span>
           </button>
           <div className="bg-primary px-4 py-1.5 rounded-full text-white font-headline text-xs font-bold shadow-md shadow-primary/20">
-            Level {user.level}
+            Level {user?.level || 1}
           </div>
         </div>
       </div>

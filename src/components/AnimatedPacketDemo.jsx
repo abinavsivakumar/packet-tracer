@@ -12,17 +12,8 @@ const AnimatedPacketDemo = () => {
 
   return (
     <div className="flex-1 relative flex items-center justify-between px-12 h-64">
-      {/* Path Visualizer (SVG Background) */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
-        <path 
-          className="text-surface-container-highest" 
-          d="M 120,50% L 50%,50% L calc(100% - 120px),50%" 
-          fill="transparent" 
-          stroke="currentColor" 
-          strokeDasharray="8 8" 
-          strokeWidth="4"
-        ></path>
-      </svg>
+      {/* Path Visualizer (CSS Line) */}
+      <div className="absolute inset-x-0 top-1/2 h-1 border-t-4 border-dashed border-surface-container-highest -translate-y-1/2 z-0"></div>
       
       {/* Laptop (Source) */}
       <div className="relative z-10 flex flex-col items-center gap-4">
